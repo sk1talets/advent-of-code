@@ -1,1 +1,1 @@
-# My [Advent of Code](https://adventofcode.com) solutions
+My [Advent of Code](https://adventofcode.com) solutions
