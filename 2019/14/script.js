@@ -33,7 +33,7 @@ function getOreAmountFor(product, amount = 1, storage = {}) {
 		storage[product] = 0;
 	}
 
-	// how many time we will need to run the reaction?
+	// how many times we will need to run the reaction?
 	const multiplier = Math.ceil(amount / productFactor);
 
 	if (productFactor * multiplier > amount) {
