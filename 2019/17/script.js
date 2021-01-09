@@ -300,253 +300,328 @@ class Program {
 	}
 }
 
-class RepairDroid {
+class ASCII {
 	constructor() {
-		this.program = new Program(fs.readFileSync('./program.txt').toString());
+		this.direction = 0;
+		this.directions = [0, 1, 2, 3];
 		this.x = 0;
 		this.y = 0;
-		this.direction = 1;
-		this.directions = [1, 4, 2, 3];
-		this.map = {0: {0: 0}};
+		this.map = [[]];
+
+		this.restart();
 	}
 
-	getDirection(n) {
-		const L = this.directions.length;
-		const curIndex = this.directions.indexOf(this.direction);
-		const newIndex = (curIndex + n + L) % L;
-
-		return this.directions[newIndex];
+	restart() {
+		this.program = new Program(fs.readFileSync('./program.txt').toString());
 	}
 
-	setDirection(dir) {
-		this.direction = dir;
+	getPosAtDirection(dir) {
+		const [x, y] = [this.x, this.y];
+		const points = [
+			[x, y - 1],
+			[x + 1, y],
+			[x, y + 1],
+			[x - 1, y],
+		];
+
+		return points[dir];
 	}
 
-	setMapPoint(x, y, type) {
-		if (!this.map[y]) {
-			this.map[y] = {};
+	getMapPointAtDirection(dir) {
+		const [x, y] = this.getPosAtDirection(dir);
+	
+		if (this.map[y] && this.map[y][x]) {
+			return this.map[y][x];
 		}
 
-		this.map[y][x] = type;
+		return null;
 	}
 
-	setPosition(x, y) {
-		this.x = x;
-		this.y = y;
+	getDirectionBySide(side) {
+		const sides = { 'F': 0, 'L': -1, 'R': 1 };
+		const direction = (2 * 4 + this.direction + sides[side]) % 4;
+
+		return direction;
 	}
 
-	sendMove(direction) {
-		let x = this.x;
-		let y = this.y;
+	getMapPointBySide(side) {
+		const direction = this.getDirectionBySide(side)
 
-		switch (direction) {
-			case 1: // north
-				y++;
-				break;
-			case 2: // south
-				y--;
-				break;
-			case 3: // west
-				x--;
-				break;
-			case 4: // east
-				x++;
-				break;
+		return this.getMapPointAtDirection(direction);
+	}
+
+	appendMapLine() {
+		this.map.push([]);
+
+		return this.getLastMapLine();
+	}
+
+	getLastMapLine() {
+		return this.map[this.map.length - 1];
+	}
+
+	appendMapPoint(point) {
+		const char = String.fromCharCode(point);
+
+		if (char === '\n') {
+			return this.appendMapLine();
 		}
 
-		this.program.addInput(direction);
-		this.program.run();
+		this.getLastMapLine().push(char);
+	}
+
+	getCurPosition() {
+		this.iterateOverMap((x, y) => {
+			if (['^', '<', '>', 'v'].includes(this.map[y][x])) {
+				[this.x, this.y] = [x, y];
+				
+				return false;
+			}
+		});
+
+		return [this.x, this.y];
+	}
+
+	iterateOverMap(cb) {
+		for (let y = 0; y < this.map.length; y++) {
+			for (let x = 0; x < this.map[y].length; x++) {
+				if (cb(x, y) === false) {
+					return;
+				}
+			}
+		}
+	}
+
+	printMap() {
+		let yy = 0;
+
+		this.iterateOverMap((x, y) => {
+			if (yy !== y) {
+				process.stdout.write('\n');
+				yy = y;
+			}
+			process.stdout.write(this.map[y][x]);
+		});
+
+		process.stdout.write('\n\n');
+	}
+
+	getAdjacent(x, y) {
+		const adjacent = [
+			[x, y - 1],
+			[x + 1, y],
+			[x, y + 1],
+			[x - 1, y],
+		];
 		
-		const status = this.program.getLastOutput();
+		return adjacent.map(([xx, yy]) => {
+			if (this.map[yy] && this.map[yy][xx]) {
+				return this.map[yy][xx];
+			}
 
-		switch (status) {
-			case 0:
-				this.setMapPoint(x, y, 2);
-				break;
-			case 1:
-				this.setMapPoint(x, y, 0);
-				this.setPosition(x, y);
-				break;
-			case 2:
-				this.setMapPoint(x, y, 1);
-				this.setPosition(x, y);
-				break;
+			return null;
+		});
+	}
+
+	getInterSections() {
+		let result = 0;
+
+		this.iterateOverMap((x, y) => {
+			if (this.map[y][x] !== '#') {
+				return;
+			}
+
+			const adjacent = this.getAdjacent(x, y);
+			const adjacentPaths = adjacent.filter(s => s === '#');
+
+			if (adjacentPaths.length === 4) {
+				result += x * y;
+			}
+		});
+
+		return result;
+	}
+
+	getPath() {
+		const path = [];
+
+		this.getCurPosition();
+
+		let steps = 0;
+
+		loop:
+		while (true) {
+			let pathFound = false;
+
+			for (const side of ['F', 'L', 'R']) {
+				if (this.getMapPointBySide(side) !== '#') {
+					continue;
+				}
+
+				pathFound = true;
+
+				if (side === 'F') {
+					[this.x, this.y] = this.getPosAtDirection(this.direction);
+					steps++;
+					continue loop;
+				}
+
+				this.direction = this.getDirectionBySide(side);
+
+				if (steps) {
+					path.push(steps);
+					steps = 0;
+				}
+				
+				path.push(side);
+
+				continue loop;
+			}
+
+			path.push(steps);
+
+			break;
 		}
 
-		return status;
+		return path;
 	}
 
 	discoverArea() {
 		while (true) {
-			for (let side = -1; side < 3; side++) {
-				if (this.program.getStatus() === 'halted') {
-					return;
-				}
+			this.program.run();
 
-				const dir = this.getDirection(side);
+			const output = this.program.getLastOutput();
 
-				if (this.sendMove(dir)) {
-					this.setDirection(dir);
-
-					break;
-				}
+			if (output) {
+				this.appendMapPoint(output);
 			}
 
-			if (!this.x && !this.y) {
+			if (this.program.getStatus() === 'halted') {
 				break;
 			}
 		}
 	}
 
-	getMap() {
-		return this.map;
-	}
-
-	printMap() {
-		const margin = 1;
-
-		let [minX, minY] = [Infinity, Infinity];
-		let [maxX, maxY] = [0, 0];
-
-		for (let y in this.map) {
-			y = parseInt(y);
-
-			minY = y < minY ? y : minY;
-			maxY = y > maxY ? y : maxY;
-
-			for (let x in this.map[y]) {
-				x = parseInt(x);
-
-				minX = x < minX ? x : minX;
-				maxX = x > maxX ? x : maxX;
-			}
-		}
-
-		for (let y = maxY + margin; y >= minY - margin; y--) {
-			if (!this.map[y]) {
-				process.stdout.write('\n');
-				continue;
-			}
-
-			for (let x = minX - margin; x <= maxX + margin; x++) {
-				let symbol = ' ';
-
-				switch (this.map[y][x]) {
-					case 0:
-						symbol = !x && !y ? '*' : ' ';
-						break;
-					case 1:
-						symbol = 'X';
-						break;
-					case 2:
-						symbol = '#';
-						break;
-	
-				}
-
-				process.stdout.write(symbol);
-			}
-
-			process.stdout.write('\n');
-		}
-	}
-
 	run() {
-		this.discoverArea();
+		let status;
 
-		return this.map;
-	}
-}
-
-function getPossibleDirections(map, x, y, prevX, prevY) {
-	const adjacent = [
-		[x, y - 1],
-		[x + 1, y],
-		[x, y + 1],
-		[x - 1, y],
-	];
-
-	const result = [];
-
-	for (const [xx, yy] of adjacent) {
-		if (xx === prevX && yy === prevY) {
-			continue;
+		while (status !== 'halted') {
+			this.program.run();
+			status = this.program.getStatus();
 		}
 
-		if (map[yy][xx] < 2) {
-			result.push([xx, yy]);
-		}
+		return this.program.getLastOutput();
 	}
-
-	return result;
-}
-
-function getStepsToOxygenSystem(map, X = 0, Y = 0, prevX = 0, prevY = 0, steps = 0) {
-	if (map[Y][X] === 1) { // OxygenSystem
-		return steps;
-	}
-
-	const directions = getPossibleDirections(map, X, Y, prevX, prevY);
-
-	if (directions.length === 0) {
-		return Infinity; // dead end
-	}
-
-	const stepCounts = [];
-
-	for (const [xx, yy] of directions) {
-		stepCounts.push(getStepsToOxygenSystem(map, xx, yy, X, Y, steps + 1));
-	}
-
-	return Math.min(...stepCounts);
-}
-
-function getLongestPath(map, X = 0, Y = 0, prevX = 0, prevY = 0, steps = 0) {
-	const directions = getPossibleDirections(map, X, Y, prevX, prevY);
-
-	if (directions.length === 0) {
-		return steps; // dead end
-	}
-
-	const stepCounts = [];
-
-	for (const [xx, yy] of directions) {
-		stepCounts.push(getLongestPath(map, xx, yy, X, Y, steps + 1));
-	}
-
-	return Math.max(...stepCounts);
 }
 
 function main() {
-	const droid = new RepairDroid();
+	const ascii = new ASCII();
 
-	droid.run();
-	droid.printMap();
+	ascii.discoverArea();
+	ascii.printMap();
 
-	const map = droid.getMap();
+	let result = ascii.getInterSections();
 
-	let steps;
+	console.log('Intersections:', result);
 
-	steps = getStepsToOxygenSystem(map);
-	
-	console.log('Shortest path to OS:', steps);
+	const memorySize = 20;
+	const path = ascii.getPath();
+	const pathString = path.join();
 
-	// part two
-	let osX, osY;
+	const pieces = [];
 
-	for (let y in map) {
-		for (let x in map[y]) {
-			if (map[y][x] === 1) {
-				[osX, osY] = [parseInt(x), parseInt(y)];
+	for (let i = 0; i < path.length; i++) {
+		if (typeof path[i] === 'number') {
+			// piece should not start with a number
+			continue;
+		}
+
+		for (let j = i + 2; j < i + memorySize; j++) {
+			if (typeof path[j] !== 'number') {
+				// piece should end with a number
+				continue;
+			}
+
+			piece = path.slice(i, j + 1).join();
+
+			const match = pathString.match(new RegExp(piece, 'g'));
+
+			if (match && match.length > 1) {
+				pieces.push(piece);
 			}
 		}
 	}
 
-	console.log('OS position:', osX, osY);
+	const findCombination = (path, chosen = []) => {
+		if (path.length === 0) {
+			return chosen;
+		}
 
-	steps = getLongestPath(map, osX, osY);
+		for (const piece of chosen) {
+			if (path.startsWith(piece)) {
+				return findCombination(path.substr(piece.length + 1), chosen)
+			}
+		}
 
-	console.log('Longest path from OS:', steps);
+		if (chosen.length === 3) {
+			return [];
+		}
+
+		for (const piece of pieces) {
+			if (path.startsWith(piece)) {
+				const result = findCombination(path.substr(piece.length + 1), [...chosen, piece]);
+
+				if (result.length) {
+					return result;
+				}
+
+			}
+		}
+
+		return [];
+	}
+
+	const functions = findCombination(pathString);
+
+	let mainRoutine = pathString;
+
+	for (let i = 0; i < functions.length; i++) {
+		const startCharCode = 'A'.charCodeAt(0);
+		const functionName = String.fromCharCode(startCharCode + i);
+
+		mainRoutine = mainRoutine.split(functions[i]).join(functionName)
+	}
+
+	console.log('Main routine:', mainRoutine);
+	console.log('Functions', functions);
+
+	// wake up
+	ascii.restart();
+	ascii.program.setTokenAt(0, 2);
+
+	// main routine
+	for (const token of mainRoutine.split('')) {
+		ascii.program.addInput(token.charCodeAt(0));
+	}
+	
+	ascii.program.addInput(10);
+
+	// functions
+	for (const f of functions) {
+		for (const token of f.split('')) {
+			ascii.program.addInput(token.charCodeAt(0))
+		}
+
+		ascii.program.addInput(10);
+	}
+
+	// videou feed
+	ascii.program.addInput('n'.charCodeAt(0));
+	ascii.program.addInput(10);
+
+	const dustCollected = ascii.run();
+
+	console.log('Dust collected:', dustCollected);
 }
 
 main();
