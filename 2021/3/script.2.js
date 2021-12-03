@@ -57,7 +57,7 @@ function getRating(data, type) {
 	}
 
 	if (nums.length > 1) {
-		console.log('failed to find raiting of type', type);
+		return;
 	}
 
 	return parseInt(nums[0], 2)
