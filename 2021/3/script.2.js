@@ -12,28 +12,15 @@ function getCommonBitAt(nums, pos) {
 	return null
 }
 
-function reverseBit(bit) {
-	return bit === '1' ? '0' : '1'
-}
-
-function getDefaultBit(type) {
-	switch (type) {
-		case 'o2':
-			return '1';
-		case 'co2':
-			return '0';
-	}
-}
-
 function getBitCriteria(type, nums, pos) {
 	const commonBit = getCommonBitAt(nums, pos);
 
 	if (commonBit === null) {
-		return getDefaultBit(type);
+		return type === 'o2' ? '1' : '0'
 	} 
 
 	if (type === 'co2') {
-		return reverseBit(commonBit)
+		return commonBit === '1' ? '0' : '1'
 	}
 
 	return commonBit;
@@ -54,10 +41,6 @@ function getRating(data, type) {
 		if (nums.length === 1) {
 			break;
 		}
-	}
-
-	if (nums.length > 1) {
-		return;
 	}
 
 	return parseInt(nums[0], 2)
