@@ -14,18 +14,19 @@ function main() {
 		return ++map[y][x];
 	}
 
-	let overlaps = {};
+	let overlaps = 0;
 
 	for (let [x1, y1, x2, y2] of vents) {
 		// part 1
 		// if (x1 != x2 && y1 != y2) {
-		//	continue;
+		// 	continue;
 		// }
 
 		let [x, y] = [x1, y1];
 
 		while (true) {
 			if (setPoint(x, y) === 2) {
+				overlaps++;
 				overlaps[`${x},${y}`] = true;
 			}
 
@@ -47,7 +48,7 @@ function main() {
 		}
 	}
 
-	console.log('result:', Object.keys(overlaps).length);
+	console.log('result:', overlaps);
 }
 
 main();
