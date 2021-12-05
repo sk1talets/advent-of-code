@@ -27,7 +27,6 @@ function main() {
 		while (true) {
 			if (setPoint(x, y) === 2) {
 				overlaps++;
-				overlaps[`${x},${y}`] = true;
 			}
 
 			if (x === x2 && y === y2) {
