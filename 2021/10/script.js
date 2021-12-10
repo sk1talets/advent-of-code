@@ -27,6 +27,8 @@ function main() {
 		'<': '>',
 	};
 
+	const opening = Object.keys(closing);
+
 	const syntaxErrCounts = {};
 	const completionScores = [];
 
@@ -35,7 +37,7 @@ function main() {
 		let opened = [];
 
 		for (const token of chunk) {
-			if (['(', '[', '{', '<'].includes(token)) {
+			if (opening.includes(token)) {
 				opened.push(token);
 			} else if (closing[opened.pop()] !== token) {
 				syntaxErrCounts[token] = syntaxErrCounts[token] + 1 || 1;
