@@ -14,22 +14,17 @@ function getAdjacent(map, x, y) {
 }
 
 function checkFlashes(map, x, y) {
-	let count = 0;
-
 	if (map[y][x] !== 10) {
 		return 0;
 	}
 
-	count++;
+	let count = 1;
 
 	for (const [xx, yy] of getAdjacent(map, x, y)) {
-		if (map[yy][xx] > 9) {
-			continue;
+		if (map[yy][xx] <= 9) {
+			map[yy][xx]++;
+			count += checkFlashes(map, xx, yy);
 		}
-
-		map[yy][xx]++;
-
-		count += checkFlashes(map, xx, yy);
 	}
 
 	map[y][x] = 11; // handled
