@@ -45,7 +45,7 @@ function main() {
 
 	for (const [axis, pos] of folding) {
 		if (axis === 'x') {
-			for (let x = pos + 1; x <= pos + pos; x++) {
+			for (let x = pos + 1; x <= 2*pos; x++) {
 				for (let y = 0; y <= maxY; y++) {
 					setDot(2*pos - x, y, getDot(x, y) || getDot(2*pos - x, y));
 					unsetDot(x, y);
@@ -53,7 +53,7 @@ function main() {
 			}
 			maxX = maxX/2;
 		} else {
-			for (let y = pos + 1; y <= pos + pos; y++) {
+			for (let y = pos + 1; y <= 2*pos; y++) {
 				for (let x = 0; x <= maxX; x++) {
 					setDot(x, 2*pos - y, getDot(x, y) || getDot(x, 2*pos - y));
 					unsetDot(x, y);
