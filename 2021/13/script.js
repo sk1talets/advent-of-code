@@ -37,9 +37,9 @@ function main() {
 
 			setDot(x, y);
 		} else {
-			const m = line.match(/fold along ([xy])=(\d+)/);
+			const [_, axis, pos] = line.match(/fold along ([xy])=(\d+)/);
 
-			folding.push([m[1], parseInt(m[2], 10)]);
+			folding.push([axis, parseInt(pos, 10)]);
 		}
 	}
 
