@@ -70,7 +70,7 @@ function main() {
 	for (let y = 0; y <= maxY; y++) {
 		for (let x = 0; x <= maxX; x++) {
 			dotsCount += getDot(x, y);
-			process.stdout.write(getDot(x, y) ? '#' : '.');
+			process.stdout.write(getDot(x, y) ? '#' : ' ');
 		}
 		process.stdout.write('\n');
 	}
