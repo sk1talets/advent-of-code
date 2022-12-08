@@ -10,6 +10,7 @@ function main() {
 	let curPath = '';
 
 	for (const line of input) {
+		// "$ cd dirname"
 		let match = line.match(/^\$ (\S+) (\S+)/);
 
 		if (match) {
@@ -38,6 +39,7 @@ function main() {
 			continue;
 		}
 
+		// "dir 123123"
 		match = line.match(/^dir (\S+)/);
 
 		if (match) {
@@ -50,6 +52,7 @@ function main() {
 			continue;
 		}
 
+		// "123123 file"
 		match = line.match(/^(\d+) (\S+)/)
 
 		if (match) {
