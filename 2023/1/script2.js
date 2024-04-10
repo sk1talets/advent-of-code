@@ -5,9 +5,6 @@ const DIGITS = [
     'five', 'six', 'seven', 'eight', 'nine'
 ];
 
-const DIGITS_REGEXP_STRING = DIGITS
-    .flatMap((word, num) => ([word, num])).join('|');
-
 function main() {
 	const lines = fs.readFileSync('./input.txt')
 		.toString()
