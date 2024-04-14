@@ -46,7 +46,6 @@ function main() {
 
             partNumber += symbol;
 
-            LOOKAROUND: 
             for (let ii = i - 1; ii <= i + 1; ii++) {
                 for (let jj = j - 1; jj <= j + 1; jj++) {
                     const adjacent = map[ii]?.[jj] ?? '';
@@ -56,8 +55,6 @@ function main() {
 
                         if (!partStars.includes(starId)) {
                             partStars.push(starId);
-
-                            break LOOKAROUND;
                         }
                     }
                 }
