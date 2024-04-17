@@ -42,8 +42,8 @@ function main() {
 
     const lines = fs
         .readFileSync('./input.txt')
-		.toString()
-		.split('\n');
+        .toString()
+        .split('\n');
 
     lines.push('');
 

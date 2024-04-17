@@ -58,8 +58,8 @@ function applyMaps(valueRanges, maps) {
 function parseInput(file) {
     const lines = fs
         .readFileSync(file)
-		.toString()
-		.split('\n');
+        .toString()
+        .split('\n');
 
     const mapSets = [];
     const seedRanges = [];
@@ -86,6 +86,7 @@ function parseInput(file) {
         if (ranges) {
             const [dst, src, length] = line.split(/\s+/).map(v => parseInt(v));
 
+            // format: [src range start, shift to apply, length]
             curMap.push([src, dst - src, length]);
         } else if (curMap.length) {
             mapSets.push(curMap);
