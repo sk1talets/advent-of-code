@@ -7,10 +7,8 @@ function getCombination(Xa, Ya, Xb, Yb, X, Y) {
     const XX = X + delta;
     const YY = Y + delta;
 
-    console.log(XX, YY);
-
-    const Na = (YY*Xb - Yb * XX) / (Ya * Xb - Yb * Xa);
-    const Nb = (YY - Ya*Na) / Yb;
+    const Na = (YY * Xb - Yb * XX) / (Ya * Xb - Yb * Xa);
+    const Nb = (YY - Ya * Na) / Yb;
 
     return [Na, Nb];
 }

@@ -3,8 +3,8 @@ const fs = require('fs');
 const [costA, costB] = [3, 1];
 
 function getCombination(Xa, Ya, Xb, Yb, X, Y) {
-    const Na = (Y*Xb - Yb * X) / (Ya * Xb - Yb * Xa);
-    const Nb = (Y - Ya*Na) / Yb;
+    const Na = (Y * Xb - Yb * X) / (Ya * Xb - Yb * Xa);
+    const Nb = (Y - Ya * Na) / Yb;
 
     return [Na, Nb];
 }
